@@ -34,6 +34,7 @@ export default function MovieRow({ title, movies, onOpen, favoriteIds, onToggleF
                 src={movie.poster}
                 alt={movie.title}
                 loading="lazy"
+                decoding="async"
                 onError={(e) => {
                   e.currentTarget.style.visibility = "hidden";
                 }}

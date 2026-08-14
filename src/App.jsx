@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import "./App.css";
 import { api } from "./api";
 import { supabase } from "./supabase";
-import { getHomeData, searchAll } from "./tmdb";
+import { discoverByName, getHomeData, searchAll } from "./tmdb";
 import Loader from "./components/Loader";
 import Header from "./components/Header";
 import Welcome from "./components/Welcome";
@@ -12,19 +12,20 @@ import Reasons from "./components/Reasons";
 import Faq from "./components/Faq";
 import Cta from "./components/Cta";
 import Newsletter from "./components/Newsletter";
-import Comments from "./components/Comments";
 import Footer from "./components/Footer";
-import MovieModal from "./components/MovieModal";
-import MovieDetails from "./components/MovieDetails";
-import Player from "./components/Player";
-import AuthModal from "./components/AuthModal";
-import Toast from "./components/Toast";
-import Library from "./components/Library";
 import FeaturedSpotlight from "./components/FeaturedSpotlight";
 import GenreBrowse from "./components/GenreBrowse";
 import ScrollProgress from "./components/ScrollProgress";
 import BackToTop from "./components/BackToTop";
 import Reveal from "./components/Reveal";
+import Toast from "./components/Toast";
+
+const MovieModal = lazy(() => import("./components/MovieModal"));
+const MovieDetails = lazy(() => import("./components/MovieDetails"));
+const Player = lazy(() => import("./components/Player"));
+const AuthModal = lazy(() => import("./components/AuthModal"));
+const Library = lazy(() => import("./components/Library"));
+const Comments = lazy(() => import("./components/Comments"));
 
 const USER_KEY = "moviehub:user";
 const HISTORY_KEY = "moviehub:history";
@@ -69,12 +70,15 @@ function snapshot(movie) {
 export default function App() {
   const [loading, setLoading] = useState(true);
   const [homeLoading, setHomeLoading] = useState(true);
+  const mountedAt = useRef(Date.now());
   const [selected, setSelected] = useState(null);
   const [details, setDetails] = useState(null);
   const [playing, setPlaying] = useState(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [genre, setGenre] = useState(null);
+  const [genreMovies, setGenreMovies] = useState([]);
+  const [genreLoading, setGenreLoading] = useState(false);
   const [toast, setToast] = useState(null);
   const [user, setUser] = useState(loadUser);
   const [comments, setComments] = useState([]);
@@ -98,9 +102,12 @@ export default function App() {
   const [history, setHistory] = useState(loadHistory);
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 2200);
-    return () => clearTimeout(t);
-  }, []);
+    if (!homeLoading) {
+      const wait = Math.max(0, 700 - (Date.now() - mountedAt.current));
+      const t = setTimeout(() => setLoading(false), wait);
+      return () => clearTimeout(t);
+    }
+  }, [homeLoading]);
 
   useEffect(() => {
     let active = true;
@@ -147,10 +154,30 @@ export default function App() {
     [trending, popular, topRated, tv, newReleases, upcoming, classics, animation, family, action, comedy, scifi, horror]
   );
 
-  const visibleMovies = useMemo(
-    () => (genre ? trending.filter((m) => m.genres?.includes(genre)) : trending),
-    [trending, genre]
-  );
+  useEffect(() => {
+    let active = true;
+    if (!genre) {
+      setGenreMovies([]);
+      setGenreLoading(false);
+      return undefined;
+    }
+    setGenreLoading(true);
+    discoverByName(genre)
+      .then((list) => {
+        if (active) setGenreMovies(list);
+      })
+      .catch(() => {
+        if (active) setGenreMovies([]);
+      })
+      .finally(() => {
+        if (active) setGenreLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [genre]);
+
+  const visibleMovies = useMemo(() => (genre ? genreMovies : trending), [genre, genreMovies, trending]);
 
   const handleSearch = async (value) => {
     if (!value) {
@@ -345,20 +372,42 @@ export default function App() {
               <FeaturedSpotlight movie={topRated[0]} onOpen={handleOpen} onPlay={handleWatch} />
             </Reveal>
             <Reveal>
-              <TrendingGrid
-                tabs={[
-                  { id: "trending", label: "🔥 Trending", movies: visibleMovies },
-                  { id: "new", label: "🆕 New Releases", movies: newReleases },
-                  { id: "popular", label: "⭐ Popular", movies: popular },
-                  { id: "top", label: "🏆 Top Rated", movies: topRated },
-                  { id: "cartoons", label: "🎨 Cartoons", movies: animation },
-                ]}
-                onOpen={handleOpen}
-                favoriteIds={favoriteIds}
-                onToggleFavorite={toggleFavorite}
-                loading={homeLoading}
-              />
+              {genre ? (
+                <TrendingGrid
+                  title={`🎬 ${genre} Movies`}
+                  movies={genreMovies}
+                  onOpen={handleOpen}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={toggleFavorite}
+                  loading={genreLoading}
+                />
+              ) : (
+                <TrendingGrid
+                  tabs={[
+                    { id: "trending", label: "🔥 Trending", movies: visibleMovies },
+                    { id: "new", label: "🆕 New Releases", movies: newReleases },
+                    { id: "popular", label: "⭐ Popular", movies: popular },
+                    { id: "top", label: "🏆 Top Rated", movies: topRated },
+                    { id: "cartoons", label: "🎨 Cartoons", movies: animation },
+                  ]}
+                  onOpen={handleOpen}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={toggleFavorite}
+                  loading={homeLoading}
+                />
+              )}
             </Reveal>
+            {history.length > 0 && (
+              <Reveal>
+                <MovieRow
+                  title="▶ Continue Watching"
+                  movies={history}
+                  onOpen={handleOpen}
+                  favoriteIds={favoriteIds}
+                  onToggleFavorite={toggleFavorite}
+                />
+              </Reveal>
+            )}
             <Reveal>
               <MovieRow
                 title="🆕 New Releases"
@@ -486,7 +535,9 @@ export default function App() {
           <Newsletter onSubscribe={handleSubscribe} />
         </Reveal>
         <Reveal>
-          <Comments comments={comments} onAdd={handleComment} />
+          <Suspense fallback={null}>
+            <Comments comments={comments} onAdd={handleComment} />
+          </Suspense>
         </Reveal>
         <Reveal>
           <Footer />
@@ -510,7 +561,7 @@ export default function App() {
       )}
       {!loading && renderSections()}
       {!loading && (
-        <>
+        <Suspense fallback={null}>
           {selected && (
             <MovieModal
               movie={selected}
@@ -544,9 +595,9 @@ export default function App() {
           )}
           <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} onSuccess={handleAuthSuccess} />
           <Toast toast={toast} />
-          <BackToTop />
-        </>
+        </Suspense>
       )}
+      {!loading && <BackToTop />}
       <Loader hidden={!loading} />
     </>
   );

@@ -7,6 +7,7 @@ export default function MovieCard({ movie, onOpen, favorite, onToggleFavorite })
           src={movie.poster}
           alt={movie.title}
           loading="lazy"
+          decoding="async"
           onError={(e) => {
             e.currentTarget.style.visibility = "hidden";
           }}

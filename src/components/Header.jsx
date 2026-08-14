@@ -23,10 +23,7 @@ export default function Header({ user, onLogin, onLogout, onSearch, onOpenLibrar
             <path d="M6 4.5v15l13-7.5-13-7.5Z" />
           </svg>
         </span>
-        <span className="logo-text">
-          <span className="brand-gradient">Ckflix</span>
-          <span className="logo-pro">PRO</span>
-        </span>
+        <span className="logo-text">Ckflix</span>
       </a>
 
       <form className="header-search" onSubmit={submit}>

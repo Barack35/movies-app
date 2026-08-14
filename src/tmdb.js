@@ -6,6 +6,45 @@ const IMG_W300 = "https://image.tmdb.org/t/p/w300";
 
 let genreMapPromise = null;
 
+const HOME_CACHE_KEY = "ckflix:home:v1";
+const HOME_CACHE_TTL = 2 * 60 * 60 * 1000;
+
+const GENRE_IDS = {
+  Action: 28,
+  Adventure: 12,
+  Animation: 16,
+  Comedy: 35,
+  Crime: 80,
+  Documentary: 99,
+  Drama: 18,
+  Family: 10751,
+  Fantasy: 14,
+  Horror: 27,
+  Mystery: 9648,
+  Romance: 10749,
+  "Sci-Fi": 878,
+  Thriller: 53,
+  War: 10752,
+};
+
+function cacheGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed.t && Date.now() - parsed.t > HOME_CACHE_TTL) return null;
+    return parsed.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheSet(key, data) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ t: Date.now(), data }));
+  } catch {}
+}
+
 function getGenres() {
   if (!genreMapPromise) {
     genreMapPromise = fetch(`${API}/genre/movie/list?api_key=${KEY}`)
@@ -77,7 +116,13 @@ async function discoverGenre(genreId, limit = 18) {
   });
 }
 
-export async function getHomeData() {
+export async function discoverByName(name, limit = 24) {
+  const id = GENRE_IDS[name];
+  if (!id) return [];
+  return discoverGenre(id, limit);
+}
+
+async function fetchHomeData() {
   const [
     trending, popular, topRated, tv, newReleases, upcoming, classics,
     animation, family, action, comedy, scifi, horror,
@@ -101,6 +146,14 @@ export async function getHomeData() {
     discoverGenre(27),   // Horror
   ]);
   return { trending, popular, topRated, tv, newReleases, upcoming, classics, animation, family, action, comedy, scifi, horror };
+}
+
+export async function getHomeData() {
+  const cached = cacheGet(HOME_CACHE_KEY);
+  if (cached) return cached;
+  const data = await fetchHomeData();
+  cacheSet(HOME_CACHE_KEY, data);
+  return data;
 }
 
 export async function searchAll(query) {

@@ -58,19 +58,21 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
         <div className="welcome-main">
           <span className="welcome-eyebrow">
             <span className="eyebrow-dot" />
-            {movies.length}+ Titles • Updated Daily
+            Ckflix • {movies.length}+ Titles • Updated Daily
           </span>
 
           <h1 className="welcome-title">
-            Welcome to <span className="brand-gradient">Ckflix</span>
+            Unlimited movies, TV shows, and more
           </h1>
-          <p className="welcome-sub">Unlimited movies, TV shows, and classics — stream free, in stunning HD.</p>
+          <p className="welcome-sub">
+            Watch anywhere. Cancel anytime. It&apos;s all <span className="brand-gradient">free</span> — no subscription, no app, no credit card.
+          </p>
 
           <div className="stats-badge">
             <Stat icon="🎬" color="var(--primary)" value={`${movies.length}+`} label="Movies" />
             <Stat icon="🎥" color="var(--success)" value="HD" label="Free Streaming" />
             <Stat icon="⭐" color="var(--warning)" value={avgRating} label="Avg Rating" />
-            <Stat icon="♾️" color="#22d3ee" value="100%" label="Free" />
+            <Stat icon="♾️" color="#ff2c36" value="100%" label="Free" />
           </div>
 
           <div className="featured-genres">
@@ -91,6 +93,7 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
                 <path d="M6 4.5v15l13-7.5-13-7.5Z" />
               </svg>
               Get Started
+              <span aria-hidden="true">›</span>
             </button>
             <button className="btn btn-glass" onClick={onBrowse}>
               Browse Movies
@@ -101,7 +104,7 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
         <div className="welcome-showcase">
           {show ? (
             <div className="hero-card" key={show.id}>
-              <img className="hero-card-poster" src={show.poster} alt={show.title} />
+              <img className="hero-card-poster" src={show.poster} alt={show.title} fetchPriority="high" />
               <div className="hero-card-glow" />
               <div className="hero-card-info">
                 <span className="hero-card-badge">

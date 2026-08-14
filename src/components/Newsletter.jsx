@@ -6,9 +6,9 @@ export default function Newsletter({ onSubscribe }) {
   return (
     <section className="newsletter-section">
       <h3>
-        <span style={{ color: "var(--primary)" }}>✉️</span> Stay Updated
+        <span style={{ color: "var(--primary)" }}>✉️</span> Ready to watch?
       </h3>
-      <p>Get the latest movie news and updates.</p>
+      <p>Enter your email to get new movies, updates, and more.</p>
       <form
         className="newsletter-form"
         onSubmit={(e) => {
@@ -20,22 +20,14 @@ export default function Newsletter({ onSubscribe }) {
       >
         <input
           type="email"
-          placeholder="Enter your email..."
+          placeholder="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
         <button type="submit" className="btn btn-primary">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Subscribe
+          Get Started
+          <span aria-hidden="true">›</span>
         </button>
       </form>
     </section>

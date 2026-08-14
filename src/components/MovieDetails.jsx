@@ -31,7 +31,7 @@ export default function MovieDetails({ movie, onClose, onPlay, favorite, onToggl
     let active = true;
     setDlLoading(true);
     setDownloads(null);
-    loadDownloads(movie.title)
+    loadDownloads(movie.title, movie.year)
       .then((d) => {
         if (active) {
           setDownloads(d);
@@ -47,7 +47,7 @@ export default function MovieDetails({ movie, onClose, onPlay, favorite, onToggl
     return () => {
       active = false;
     };
-  }, [movie.id, movie.title]);
+  }, [movie.id, movie.title, movie.year]);
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
