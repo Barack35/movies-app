@@ -4,7 +4,7 @@
 A React movie streaming site ("CKFLIX"). Frontend only + Supabase (free backend) for auth, favorites, comments, newsletter subscribers, and an admin panel.
 
 ## Where we are — LAUNCHED
-- **Live in production:** `https://tresorkundwa.github.io/movies-app/` (GitHub Pages, HTTPS, auto-deploys on every push to `main`).
+- **Live in production:** `https://barack35.github.io/movies-app/` (GitHub Pages, HTTPS, auto-deploys on every push to `main`).
 - **Supabase connected and working.** Project URL `https://spalwnkhwvkpiorecwwz.supabase.co`. Schema in `supabase/schema.sql` has been run (profiles, subscribers, comments, favorites, classics; RLS; `is_admin()` + `increment_play()`). "Confirm email" is OFF so signups get an instant session.
 - **Real auth restored.** `src/components/AuthModal.jsx` now calls `api.login` / `api.register` (Supabase). It had been replaced with a fake guest-only login, which meant nobody could actually create an account — that was the launch blocker and is fixed.
 - **PWA added.** `public/manifest.webmanifest` + `public/sw.js` + installable meta tags — the site is now installable to home screens and has a basic offline app-shell.

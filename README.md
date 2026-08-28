@@ -1,6 +1,6 @@
 # Ckflix — Movies & TV
 
-**▶ Live:** <https://tresorkundwa.github.io/movies-app/>
+**▶ Live:** <https://barack35.github.io/movies-app/>
 
 A free movie/TV streaming web app built with React + Vite. Movie data comes from
 the TMDB API; accounts, favorites, comments and the newsletter run on a free
@@ -46,7 +46,7 @@ The site is a Vite + React SPA, so Vercel auto-detects everything. A
 `vercel.json` is included so client-side routes fall back to `index.html`.
 
 **Easiest (no terminal):** go to <https://vercel.com> → **Add New → Project** →
-import the `tresorkundwa/movies-app` GitHub repo → click **Deploy**. Vercel
+import the `Barack35/movies-app` GitHub repo → click **Deploy**. Vercel
 auto-uses `npm run build` and output dir `dist`.
 
 **Or with the CLI** (run in this folder):

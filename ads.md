@@ -1,6 +1,6 @@
 # Ckflix Ad Pack — Netflix-Style
 
-**URL to promote:** https://tresorkundwa.github.io/movies-app/
+**URL to promote:** https://barack35.github.io/movies-app/
 
 ---
 
@@ -19,12 +19,12 @@
 >
 > Ckflix — the free cinema that never closes. Unlimited movies & TV, zero cost. Watch instantly in your browser. No app to install, no card needed. Just click and press play.
 >
-> ➡️ https://tresorkundwa.github.io/movies-app/
+> ➡️ https://barack35.github.io/movies-app/
 
 ### Twitter/X (short)
 > Free movies. Free TV. No subscription. 🍿
 > Watch anywhere. Cancel anytime. (No, really — there's nothing to cancel.)
-> ➡️ https://tresorkundwa.github.io/movies-app/
+> ➡️ https://barack35.github.io/movies-app/
 
 ### TikTok / Reels caption
 > POV: You just found the streaming site that's actually free. 😱🍿
@@ -57,7 +57,7 @@
   Movies • Series • Favorites • Comments
 
    Scan the code — start watching now
-    tresorkundwa.github.io/movies-app
+    barack35.github.io/movies-app
 ```
 
 ### Flyer one-liner
@@ -107,7 +107,7 @@
 
 **0:25–0:30**
 > Ckflix. The free cinema that never closes.
-> Watch now → tresorkundwa.github.io/movies-app
+> Watch now → barack35.github.io/movies-app
 
 ### Step-by-step (CapCut)
 1. Open CapCut → **New project** → set ratio to 9:16.
