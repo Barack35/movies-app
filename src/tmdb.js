@@ -3,6 +3,18 @@ const API = "https://api.themoviedb.org/3";
 const IMG_ORIGINAL = "https://image.tmdb.org/t/p/original";
 const IMG_W500 = "https://image.tmdb.org/t/p/w500";
 const IMG_W300 = "https://image.tmdb.org/t/p/w300";
+const FETCH_TIMEOUT = 15000;
+
+async function fetchJson(url) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal });
+    return await res.json();
+  } finally {
+    clearTimeout(t);
+  }
+}
 
 let genreMapPromise = null;
 
@@ -47,8 +59,7 @@ function cacheSet(key, data) {
 
 function getGenres() {
   if (!genreMapPromise) {
-    genreMapPromise = fetch(`${API}/genre/movie/list?api_key=${KEY}`)
-      .then((r) => r.json())
+    genreMapPromise = fetchJson(`${API}/genre/movie/list?api_key=${KEY}`)
       .then((d) => Object.fromEntries((d.genres || []).map((g) => [g.id, g.name])))
       .catch(() => ({}));
   }
@@ -108,7 +119,7 @@ async function mapItems(ms, mediaType) {
 
 async function fetchList(path, mediaType = "movie", limit = 12, params = {}) {
   const qs = new URLSearchParams({ api_key: KEY, ...params });
-  const d = await fetch(`${API}${path}?${qs}`).then((r) => r.json());
+  const d = await fetchJson(`${API}${path}?${qs}`);
   return mapItems(d.results?.slice(0, limit), mediaType);
 }
 
@@ -164,8 +175,8 @@ export async function searchAll(query) {
   const q = encodeURIComponent(query);
   const genres = await getGenres();
   const [mr, tr] = await Promise.all([
-    fetch(`${API}/search/movie?api_key=${KEY}&query=${q}&page=1`).then((r) => r.json()),
-    fetch(`${API}/search/tv?api_key=${KEY}&query=${q}&page=1`).then((r) => r.json()),
+    fetchJson(`${API}/search/movie?api_key=${KEY}&query=${q}&page=1`),
+    fetchJson(`${API}/search/tv?api_key=${KEY}&query=${q}&page=1`),
   ]);
   const movies = (mr.results || []).map((m) => toItem({ ...m, media_type: "movie" }, genres));
   const tv = (tr.results || []).map((m) => toItem({ ...m, media_type: "tv" }, genres));
@@ -175,7 +186,7 @@ export async function searchAll(query) {
 export async function getTrailer(id, mediaType = "movie") {
   const type = mediaType === "tv" ? "tv" : "movie";
   try {
-    const d = await fetch(`${API}/${type}/${id}/videos?api_key=${KEY}`).then((r) => r.json());
+    const d = await fetchJson(`${API}/${type}/${id}/videos?api_key=${KEY}`);
     const tr = (d.results || []).find((v) => v.type === "Trailer" && v.site === "YouTube");
     return tr ? tr.key : null;
   } catch {
@@ -186,9 +197,9 @@ export async function getTrailer(id, mediaType = "movie") {
 export async function getDetails(item) {
   const type = item.media_type === "tv" ? "tv" : "movie";
   try {
-    const d = await fetch(
+    const d = await fetchJson(
       `${API}/${type}/${item.id}?api_key=${KEY}&append_to_response=videos,credits,similar`
-    ).then((r) => r.json());
+    );
     if (!d || d.success === false) return { ...item, cast: [], similar: [] };
     const tr = (d.videos?.results || []).find((v) => v.type === "Trailer" && v.site === "YouTube");
     const genres = await getGenres();
