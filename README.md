@@ -1,5 +1,7 @@
 # Ckflix — Movies & TV
 
+**▶ Live:** <https://tresorkundwa.github.io/movies-app/>
+
 A free movie/TV streaming web app built with React + Vite. Movie data comes from
 the TMDB API; accounts, favorites, comments and the newsletter run on a free
 [Supabase](https://supabase.com) backend. The site is deployed for free to
