@@ -40,6 +40,22 @@ npm run dev
 
    (The anon key is public by design — it's safe to commit.)
 
+## Deploying to Vercel (free, recommended if `github.io` is blocked)
+
+The site is a Vite + React SPA, so Vercel auto-detects everything. A
+`vercel.json` is included so client-side routes fall back to `index.html`.
+
+**Easiest (no terminal):** go to <https://vercel.com> → **Add New → Project** →
+import the `tresorkundwa/movies-app` GitHub repo → click **Deploy**. Vercel
+auto-uses `npm run build` and output dir `dist`.
+
+**Or with the CLI** (run in this folder):
+```bash
+npx vercel login     # opens browser to authenticate
+npx vercel --prod     # builds + deploys
+```
+Your live URL will be something like `https://movies-app-xxxx.vercel.app`.
+
 ## Deploying to GitHub Pages (free)
 
 1. Create a free account at <https://github.com> and create a new empty repo
