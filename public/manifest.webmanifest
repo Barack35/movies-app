@@ -1,0 +1,19 @@
+{
+  "name": "Ckflix — Movies & TV",
+  "short_name": "Ckflix",
+  "description": "Unlimited movies, TV shows and more. 100% free, right in your browser.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#141414",
+  "theme_color": "#e50914",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,7 +1,16 @@
 import { useState } from "react";
 
-export default function Header({ user, onLogin, onLogout, onSearch, onOpenLibrary, searching }) {
+const THEMES = {
+  streaming: { icon: "🔴", label: "Classic" },
+  glass: { icon: "🔮", label: "Glass" },
+  playful: { icon: "🎨", label: "Colorful" },
+  minimal: { icon: "🤍", label: "Minimal" },
+  neon: { icon: "💠", label: "Neon" },
+};
+
+export default function Header({ user, onLogin, onLogout, onSearch, onOpenLibrary, onOpenAdmin, searching, theme, onCycleTheme }) {
   const [value, setValue] = useState("");
+  const current = THEMES[theme] || THEMES.streaming;
 
   const submit = (e) => {
     e.preventDefault();
@@ -45,6 +54,10 @@ export default function Header({ user, onLogin, onLogout, onSearch, onOpenLibrar
       </form>
 
       <div className="header-actions">
+        <button className="theme-btn" onClick={onCycleTheme} aria-label={`Switch theme (current: ${current.label})`} title={`Theme: ${current.label}`}>
+          <span aria-hidden="true">{current.icon}</span>
+          <span className="theme-btn-label">{current.label}</span>
+        </button>
         <button className="btn btn-outline header-btn" onClick={onOpenLibrary}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
@@ -52,6 +65,20 @@ export default function Header({ user, onLogin, onLogout, onSearch, onOpenLibrar
           </svg>
           <span className="header-btn-label">My Library</span>
         </button>
+        {user?.isAdmin && (
+          <button className="btn btn-outline header-btn" onClick={onOpenAdmin} title="Admin Panel">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+              <path d="m9 12 2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span className="header-btn-label">Admin</span>
+          </button>
+        )}
         {user ? (
           <div className="header-user">
             <span className="header-user-name" title={user.name}>

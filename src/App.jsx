@@ -15,6 +15,7 @@ import Newsletter from "./components/Newsletter";
 import Footer from "./components/Footer";
 import FeaturedSpotlight from "./components/FeaturedSpotlight";
 import GenreBrowse from "./components/GenreBrowse";
+import AdminPanel from "./components/AdminPanel";
 import ScrollProgress from "./components/ScrollProgress";
 import BackToTop from "./components/BackToTop";
 import Reveal from "./components/Reveal";
@@ -30,6 +31,18 @@ const Comments = lazy(() => import("./components/Comments"));
 const USER_KEY = "moviehub:user";
 const HISTORY_KEY = "moviehub:history";
 const FAVS_KEY = "moviehub:favs";
+const THEME_KEY = "ckflix:theme";
+
+const THEME_ORDER = ["streaming", "glass", "playful", "minimal", "neon"];
+
+function loadTheme() {
+  try {
+    const t = localStorage.getItem(THEME_KEY);
+    return THEME_ORDER.includes(t) ? t : "streaming";
+  } catch {
+    return "streaming";
+  }
+}
 
 function loadUser() {
   try {
@@ -53,6 +66,10 @@ function loadFavItems() {
   } catch {
     return [];
   }
+}
+
+function isRealUser(u) {
+  return Boolean(u && u.id && u.id !== "guest" && !String(u.id).startsWith("guest:"));
 }
 
 function snapshot(movie) {
@@ -100,6 +117,18 @@ export default function App() {
   const [favoriteItems, setFavoriteItems] = useState(loadFavItems);
   const [favoriteIds, setFavoriteIds] = useState(() => new Set(favoriteItems.map((m) => m.id)));
   const [history, setHistory] = useState(loadHistory);
+  const [theme, setTheme] = useState(loadTheme);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch {}
+  }, [theme]);
+
+  const cycleTheme = () => {
+    setTheme((t) => THEME_ORDER[(THEME_ORDER.indexOf(t) + 1) % THEME_ORDER.length]);
+  };
 
   useEffect(() => {
     if (!homeLoading) {
@@ -235,25 +264,25 @@ export default function App() {
       if (!data?.user) return;
       const u = data.user;
       const stored = loadUser();
-      if (!stored || stored.id !== u.id) {
+      if (stored && stored.id === u.id && stored.isAdmin !== undefined) return;
+      api.profile(u.id).then((profile) => {
         const nu = {
           id: u.id,
           name: u.user_metadata?.name || "",
           email: u.email || "",
+          isAdmin: Boolean(profile?.is_admin),
         };
         setUser(nu);
         localStorage.setItem(USER_KEY, JSON.stringify(nu));
-        refreshFavorites(nu.id);
-      }
+      });
+      refreshFavorites(u.id);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleWatch = (movie) => {
     if (!user) {
-      setAuthOpen(true);
-      showToast("Login required", "Sign in to watch full movies", "info");
-      return;
+      setUser({ id: "guest", name: "Guest", email: "", isAdmin: false });
     }
     api.play(movie.id).catch(() => {});
     setDetails(null);
@@ -273,9 +302,9 @@ export default function App() {
   };
 
   const toggleFavorite = (movie) => {
-    if (!user) {
+    if (!isRealUser(user)) {
+      showToast("Sign in to save favorites", "Create a free account first", "info");
       setAuthOpen(true);
-      showToast("Login required", "Sign in to save favorites", "info");
       return;
     }
     const id = movie.id;
@@ -308,6 +337,14 @@ export default function App() {
     refreshFavorites(u.id);
     setAuthOpen(false);
     showToast(`Welcome, ${u.name}!`, "You are now signed in", "success");
+    if (u.isAdmin === undefined) {
+      api.profile(u.id).then((p) => {
+        if (!p) return;
+        const nu = { ...u, isAdmin: Boolean(p.is_admin) };
+        setUser(nu);
+        localStorage.setItem(USER_KEY, JSON.stringify(nu));
+      });
+    }
   };
 
   const handleLogout = () => {
@@ -319,10 +356,14 @@ export default function App() {
     setAuthOpen(false);
   };
 
+  const openAdmin = () => {
+    document.getElementById("adminPanel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const handleComment = (text) => {
-    if (!user) {
+    if (!isRealUser(user)) {
+      showToast("Sign in to post a comment", "Create a free account first", "info");
       setAuthOpen(true);
-      showToast("Login required", "Sign in to post a comment", "info");
       return;
     }
     api.addComment(user.name, text)
@@ -347,6 +388,7 @@ export default function App() {
           onGenre={setGenre}
           onGetStarted={openBrowse}
           onBrowse={openBrowse}
+          onWatch={handleWatch}
         />
 
         {searching ? (
@@ -539,6 +581,11 @@ export default function App() {
             <Comments comments={comments} onAdd={handleComment} />
           </Suspense>
         </Reveal>
+        {user?.isAdmin && (
+          <Reveal>
+            <AdminPanel />
+          </Reveal>
+        )}
         <Reveal>
           <Footer />
         </Reveal>
@@ -556,7 +603,10 @@ export default function App() {
           onLogout={handleLogout}
           onSearch={handleSearch}
           onOpenLibrary={() => setLibraryOpen(true)}
+          onOpenAdmin={openAdmin}
           searching={Boolean(query)}
+          theme={theme}
+          onCycleTheme={cycleTheme}
         />
       )}
       {!loading && renderSections()}

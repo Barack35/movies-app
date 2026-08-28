@@ -58,18 +58,22 @@ function getGenres() {
 export function embedUrl(id, mediaType = "movie", source = "vidsrc") {
   const type = mediaType === "tv" ? "tv" : "movie";
   switch (source) {
-    case "2embed":
-      return type === "tv" ? `https://www.2embed.cc/embedtv/${id}` : `https://www.2embed.cc/embed/${id}`;
-    case "embedder":
-      return `https://embedder.net/e/${type}/${id}`;
-    case "vidsrcto":
-      return `https://vidsrc.to/embed/${type}/${id}`;
-    case "vidsrcrip":
-      return `https://vidsrc.rip/embed/${type}/${id}`;
+    case "vidsrc":
+      return `https://vidsrc.to/embed/${type}/${id}?autoplay=1`;
+    case "vidfast":
+      return type === "tv"
+        ? `https://vidfast.pro/tv/${id}/1/1?autoPlay=true`
+        : `https://vidfast.pro/movie/${id}?autoPlay=true`;
     case "vidlink":
       return `https://vidlink.pro/${type}/${id}`;
+    case "2embed":
+      return `https://www.2embed.cc/embed/${id}`;
+    case "vidcore":
+      return `https://vidcore.org/embed/${type}/${id}?autoPlay=true`;
+    case "moviesapi":
+      return `https://moviesapi.to/movie/${id}`;
     default:
-      return `https://vidsrc.pm/embed/${type}/${id}`;
+      return `https://vidsrc.to/embed/${type}/${id}?autoplay=1`;
   }
 }
 

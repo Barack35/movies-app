@@ -106,12 +106,12 @@ export default function AuthModal({ open, onClose, onSuccess }) {
               <div
                 style={{
                   padding: "0.6rem 1rem",
-                  background: "rgba(229,9,20,0.12)",
+                  background: "rgba(var(--primary-rgb),0.12)",
                   color: "var(--primary)",
                   borderRadius: 8,
                   marginBottom: "0.8rem",
                   fontSize: "0.8rem",
-                  border: "1px solid rgba(229,9,20,0.15)",
+                  border: "1px solid rgba(var(--primary-rgb),0.15)",
                 }}
               >
                 {error}
@@ -123,6 +123,26 @@ export default function AuthModal({ open, onClose, onSuccess }) {
             </button>
           </form>
           <div className="auth-switch">
+            <button
+              type="button"
+              className="auth-guest-btn"
+              style={{
+                width: "100%",
+                padding: "0.7rem",
+                marginTop: "0.6rem",
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: 8,
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+              }}
+              onClick={() => {
+                onSuccess({ id: "guest", name: "Guest", email: "", isAdmin: false });
+              }}
+            >
+              Continue as Guest
+            </button>
             {tab === "login" ? (
               <>
                 Don&apos;t have an account?{" "}

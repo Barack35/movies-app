@@ -13,12 +13,11 @@ function Stat({ icon, color, value, label }) {
   );
 }
 
-export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, onBrowse }) {
+export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, onBrowse, onWatch }) {
   const [slide, setSlide] = useState(0);
   const timer = useRef(null);
 
   const withBackdrop = movies.filter((m) => m.backdrop);
-  const backdrops = withBackdrop.map((m) => m.backdrop);
   const show = withBackdrop[slide % Math.max(withBackdrop.length, 1)] || movies[0];
 
   useEffect(() => {
@@ -34,19 +33,27 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
 
   const marqueeTitles = movies.slice(0, 12).map((m) => m.title).filter(Boolean);
 
+  const a = movies[0];
+
+  const card = (m, className, showMeta) =>
+    m ? (
+      <div className={`bento-card ${className}`} onClick={() => onWatch(m)} role="button" tabIndex={0} aria-label={`Watch ${m.title}`}>
+        <img src={m.poster} alt={m.title} loading="lazy" />
+        <div className="bento-shade" />
+        <div className="bento-info">
+          {showMeta && <span className="bento-tag">Watch Now</span>}
+          <strong>{m.title}</strong>
+          <span className="bento-meta">
+            {m.year} • ⭐ {(m.rating || 0).toFixed(1)}
+          </span>
+        </div>
+        <span className="bento-play" aria-hidden="true">▶</span>
+      </div>
+    ) : null;
+
   return (
     <section className="welcome-section">
-      {backdrops.length > 0 && (
-        <div className="welcome-bg-stack">
-          {backdrops.slice(0, 4).map((url, i) => (
-            <div
-              key={url + i}
-              className={`welcome-bg ${i === slide % Math.min(backdrops.length, 4) ? "welcome-bg--active" : ""}`}
-              style={{ backgroundImage: `url(${url})` }}
-            />
-          ))}
-        </div>
-      )}
+      <div className="welcome-vignette" />
       <div className="bg-gradient">
         <div className="gradient-1" />
         <div className="gradient-2" />
@@ -54,25 +61,23 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
       </div>
       <div className="welcome-noise" />
 
-      <div className="welcome-content">
-        <div className="welcome-main">
-          <span className="welcome-eyebrow">
+      <div className="bento">
+        <div className="bento-head">
+          <span className="bento-eyebrow">
             <span className="eyebrow-dot" />
-            Ckflix • {movies.length}+ Titles • Updated Daily
+            Ckflix · Free Cinema
           </span>
-
-          <h1 className="welcome-title">
-            Unlimited movies, TV shows, and more
+          <h1 className="bento-title">
+            Cinema, <span className="brand-gradient">free</span> on every screen.
           </h1>
-          <p className="welcome-sub">
-            Watch anywhere. Cancel anytime. It&apos;s all <span className="brand-gradient">free</span> — no subscription, no app, no credit card.
+          <p className="bento-sub">
+            A century of films, one click away. No account, no app, no card — just press play.
           </p>
 
           <div className="stats-badge">
             <Stat icon="🎬" color="var(--primary)" value={`${movies.length}+`} label="Movies" />
-            <Stat icon="🎥" color="var(--success)" value="HD" label="Free Streaming" />
             <Stat icon="⭐" color="var(--warning)" value={avgRating} label="Avg Rating" />
-            <Stat icon="♾️" color="#ff2c36" value="100%" label="Free" />
+            <Stat icon="♾️" color="var(--accent-2)" value="100%" label="Free" />
           </div>
 
           <div className="featured-genres">
@@ -92,7 +97,7 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 4.5v15l13-7.5-13-7.5Z" />
               </svg>
-              Get Started
+              Start Watching
               <span aria-hidden="true">›</span>
             </button>
             <button className="btn btn-glass" onClick={onBrowse}>
@@ -101,10 +106,12 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
           </div>
         </div>
 
-        <div className="welcome-showcase">
+        {card(a, "bento-card--feature", true)}
+
+        <div className="bento-showcase" role="button" tabIndex={0} aria-label={`Watch ${show?.title || "featured movie"}`} onClick={() => onWatch(show)}>
           {show ? (
             <div className="hero-card" key={show.id}>
-              <img className="hero-card-poster" src={show.poster} alt={show.title} fetchPriority="high" />
+              <img className="hero-card-poster" src={show.poster} alt="" fetchPriority="high" />
               <div className="hero-card-glow" />
               <div className="hero-card-info">
                 <span className="hero-card-badge">
@@ -115,10 +122,7 @@ export default function Welcome({ movies, activeGenre, onGenre, onGetStarted, on
                   {show.year} • ⭐ {(show.rating || 0).toFixed(1)}
                 </span>
               </div>
-              <div className="hero-card-floater hero-card-floater--a">▶ HD</div>
-              <div className="hero-card-floater hero-card-floater--b">
-                {show.genres?.[0] || "Free"}
-              </div>
+              <span className="hero-card-floater hero-card-floater--a">▶ Watch Full</span>
             </div>
           ) : (
             <div className="hero-card hero-card--skeleton" />

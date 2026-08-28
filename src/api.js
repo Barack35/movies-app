@@ -20,6 +20,25 @@ async function ensureProfile(user) {
   if (error) throw new Error(mapError(error) || "Could not save profile.");
 }
 
+async function fetchProfile(userId) {
+  if (!supabase || !userId) return null;
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, name, email, is_admin")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) return null;
+  return data || null;
+}
+
+function userSession(u) {
+  return {
+    id: u.id,
+    name: u.user_metadata?.name || "",
+    email: u.email || "",
+  };
+}
+
 export const api = {
   movies: async () => {
     if (!supabase) return [];
@@ -56,11 +75,8 @@ export const api = {
       session = res.data.session;
     }
     await ensureProfile(session.user);
-    return {
-      id: session.user.id,
-      name: session.user.user_metadata?.name || name,
-      email: session.user.email || email,
-    };
+    const profile = await fetchProfile(session.user.id);
+    return { ...userSession(session.user), isAdmin: Boolean(profile?.is_admin) };
   },
 
   login: async (email, password) => {
@@ -68,12 +84,11 @@ export const api = {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error("Invalid email or password.");
     await ensureProfile(data.user);
-    return {
-      id: data.user.id,
-      name: data.user.user_metadata?.name || "",
-      email: data.user.email || email,
-    };
+    const profile = await fetchProfile(data.user.id);
+    return { ...userSession(data.user), isAdmin: Boolean(profile?.is_admin) };
   },
+
+  profile: fetchProfile,
 
   comments: async () => {
     if (!supabase) return [];
@@ -103,6 +118,24 @@ export const api = {
     const { error } = await supabase.from("subscribers").insert({ email });
     if (error && !/duplicate/i.test(error.message)) throw new Error(mapError(error) || error.message);
     return { email };
+  },
+
+  subscribers: async () => {
+    if (!supabase) return [];
+    const { data, error } = await supabase
+      .from("subscribers")
+      .select("id, email, created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw new Error(mapError(error) || error.message);
+    return data || [];
+  },
+
+  deleteComment: async (commentId) => {
+    if (!supabase) throw notConfigured();
+    const { error } = await supabase.from("comments").delete().eq("id", commentId);
+    if (error) throw new Error(mapError(error) || error.message);
+    return { deleted: commentId };
   },
 
   favorites: async (userId) => {
