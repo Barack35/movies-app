@@ -3,6 +3,7 @@ services:
     name: movies-app
     runtime: static
     rootDir: .
+    branch: main
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
     envVars:
