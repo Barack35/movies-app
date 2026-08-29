@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: movies-app
+    runtime: static
+    rootDir: .
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+    routes:
+      - type: rewrite
+        source: /(.*)
+        destination: /index.html
