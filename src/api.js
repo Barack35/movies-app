@@ -88,6 +88,16 @@ export const api = {
     return { ...userSession(data.user), isAdmin: Boolean(profile?.is_admin) };
   },
 
+  signInWithGoogle: async () => {
+    if (!supabase) throw notConfigured();
+    const redirectTo = `${window.location.origin}/`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo },
+    });
+    if (error) throw new Error(error.message || "Could not start Google sign in.");
+  },
+
   profile: fetchProfile,
 
   comments: async () => {
