@@ -260,23 +260,31 @@ export default function App() {
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.auth.getUser().then(({ data }) => {
-      if (!data?.user) return;
-      const u = data.user;
-      const stored = loadUser();
-      if (stored && stored.id === u.id && stored.isAdmin !== undefined) return;
-      api.profile(u.id).then((profile) => {
-        const nu = {
-          id: u.id,
-          name: u.user_metadata?.name || "",
-          email: u.email || "",
-          isAdmin: Boolean(profile?.is_admin),
-        };
-        setUser(nu);
-        localStorage.setItem(USER_KEY, JSON.stringify(nu));
-      });
-      refreshFavorites(u.id);
-    });
+    let active = true;
+    supabase.auth
+      .getSession()
+      .then(({ data }) => (data.session ? data.session.user : supabase.auth.getUser().then((r) => r.data.user)))
+      .then((u) => {
+        if (!active || !u) return;
+        const stored = loadUser();
+        if (stored && stored.id === u.id && stored.isAdmin !== undefined) return;
+        api.profile(u.id).then((profile) => {
+          if (!active) return;
+          const nu = {
+            id: u.id,
+            name: u.user_metadata?.name || "",
+            email: u.email || "",
+            isAdmin: Boolean(profile?.is_admin),
+          };
+          setUser(nu);
+          localStorage.setItem(USER_KEY, JSON.stringify(nu));
+        });
+        refreshFavorites(u.id);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
